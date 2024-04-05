@@ -6,6 +6,8 @@
 # Install in PATH as git-annex-remote-directory
 #
 # Copyright 2013 Joey Hess; licenced under the GNU GPL version 3 or higher.
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
 
 set -e
 
