@@ -1,8 +1,8 @@
 #!/bin/sh
 # git-annex external special remote program
-# 
+#
 # This is basically the same as git-annex's built-in directory special remote.
-# 
+#
 # Install in PATH as git-annex-remote-directory
 #
 # Copyright 2013 Joey Hess; licenced under the GNU GPL version 3 or higher.
@@ -99,7 +99,7 @@ doretrieve () {
 	local key="$1"
 	local file="$2"
 	local loc="$3"
-	
+
 	# XXX when easy to do, send PROGRESS while transferring the file
 	if [ -e "$loc" ]; then
 		if runcmd cp "$loc" "$file"; then
@@ -164,11 +164,11 @@ while read line; do
 		INITREMOTE)
 			# Do anything necessary to create resources
 			# used by the remote. Try to be idempotent.
-			# 
+			#
 			# Use GETCONFIG to get any needed configuration
 			# settings, and SETCONFIG to set any persistent
 			# configuration settings.
-			# 
+			#
 			# (Note that this is not run every time, only when
 			# git annex initremote or git annex enableremote is
 			# run.)
@@ -303,7 +303,7 @@ while read line; do
 		*)
 			echo UNSUPPORTED-REQUEST
 		;;
-	esac	
+	esac
 done
 
 # XXX anything that needs to be done at shutdown can be done here
