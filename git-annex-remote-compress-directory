@@ -50,32 +50,6 @@ ask () {
   esac
 }
 
-# This remote doesn't need credentials to access it,
-# but many of them will. Here's how to handle requiring the user
-# set MYPASSWORD and MYLOGIN when running initremote. The creds
-# will be stored securely for later use, so the user only needs
-# to provide them once.
-setupcreds () {
-  if [ -z "$MYPASSWORD" ] || [ -z "$MYLOGIN" ]; then
-    echo INITREMOTE-FAILURE "You need to set MYPASSWORD and MYLOGIN environment variables when running initremote."
-  else
-    echo SETCREDS mycreds "$MYLOGIN" "$MYPASSWORD"
-    echo INITREMOTE-SUCCESS
-  fi
-}
-
-getcreds () {
-  echo GETCREDS mycreds
-  read resp
-  case "${resp%% *}" in
-    CREDS)
-      MYLOGIN="$(echo "$resp" | sed 's/^CREDS \([^ ]*\) .*/\1/')"
-      MYPASSWORD="$(echo "$resp" | sed 's/^CREDS [^ ]* //')"
-    ;;
-  esac
-
-}
-
 dostore () {
   local key="$1"
   local file="$2"
@@ -88,7 +62,7 @@ dostore () {
   # XXX when at all possible, send PROGRESS while transferring
   # the file.
   rm -f "$tmp"
-  if runcmd cp "$file" "$tmp" \
+  if runcmd zstd --force --quiet --check --ultra -22 --keep "$file" -o "$tmp" \
      && runcmd mv -f "$tmp" "$loc"; then
     echo TRANSFER-SUCCESS STORE "$key"
   else
@@ -104,7 +78,7 @@ doretrieve () {
 
   # XXX when easy to do, send PROGRESS while transferring the file
   if [ -e "$loc" ]; then
-    if runcmd cp "$loc" "$file"; then
+    if runcmd zstd --force --quiet --decompress --check "$loc" -o "$file"; then
       echo TRANSFER-SUCCESS RETRIEVE "$key"
     else
       echo TRANSFER-FAILURE RETRIEVE "$key"
@@ -185,7 +159,7 @@ while read line; do
         echo INITREMOTE-FAILURE "You need to set directory="
       else
         if mkdir -p "$mydirectory"; then
-          setupcreds
+          echo INITREMOTE-SUCCESS
         else
           echo INITREMOTE-FAILURE "Failed to write to $mydirectory"
         fi
@@ -195,7 +169,6 @@ while read line; do
       # Use GETCONFIG to get configuration settings,
       # and do anything needed to get ready for using the
       # special remote here.
-      getcreds
       getconfig directory
       mydirectory="$RET"
       if [ -d "$mydirectory" ]; then
@@ -297,8 +270,6 @@ while read line; do
     GETINFO)
       echo INFOFIELD "repository location"
       echo INFOVALUE "$mydirectory"
-      echo INFOFIELD "login"
-      echo INFOVALUE "$MYLOGIN"
       echo INFOEND
     ;;
 
